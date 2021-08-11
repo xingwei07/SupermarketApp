@@ -1,16 +1,269 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
-    <title></title>
-    <script src="js/mui.min.js"></script>
-    <link href="css/mui.min.css" rel="stylesheet"/>
-    <script type="text/javascript" charset="utf-8">
-      	mui.init();
-    </script>
-</head>
-<body>
+
+	<head>
+		<meta charset="utf-8">
+		<title>Hello MUI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<!--标准mui.css-->
+		<link rel="stylesheet" href="css/mui.min.css">
+		<!--App自定义的css-->
+		<link rel="stylesheet" type="text/css" href="css/app.css" />
+		<style>
+			html, #app {
+				background-color: #f6f5ec;
+			}
+			
+			.title {
+				margin: 20px 15px 10px;
+				color: #6d6d72;
+				font-size: 15px;
+			}
+			
+			.file_cla {
+				opacity: 0;
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+			}
+			.header1 {
+				width: 40%;
+			}
+			.header2 {
+				width: 60%;
+			}
+			.mui-card {
+				border-radius: 10px;
+			}
+			.mui-input-row label {
+				width: 60px;
+				padding-right: 0;
+			}
+			.mui-input-row label~input {
+				width: 75%;
+			}
+			.mui-input-row span {
+				color: red;
+			}
+			.mui-card-content {
+				padding-right: 10px;
+			}
+			.mui-button-row {
+				width: 100%;
+			}
+			.mui-btn-a {
+				width: 40%;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav" style="background-color: mediumblue;">
+			<h1 class="mui-title" style="color: white;">自主筛选</h1>
+		</header>
+		<nav class="mui-bar mui-bar-tab">
+			<a id="main" class="mui-tab-item mui-active" href="#tabbar">
+				<span class="mui-icon mui-icon-home"></span>
+				<span class="mui-tab-label">首页</span>
+			</a>
+			<a class="mui-tab-item" href="#tabbar-with-map">
+				<span class="mui-icon mui-icon-gear"></span>
+				<span class="mui-tab-label">设置</span>
+			</a>
+		</nav>
+		<div id="app" class="mui-content">
+			<div id="tabbar" class="mui-control-content mui-active">
+				<div class="title">
+					<div style="width: 80%; float: left;" class="mui-input-row mui-search">
+						<input id="searVal" type="search" class="mui-input-clear" placeholder="">
+					</div>
+					<div style="width: 20%; float: left; padding-left: 10px;">
+						<button type="button" class="mui-btn mui-btn-primary" v-on:tap="search()">查找</button>
+					</div>
+				</div>
+				<div class="mui-card" v-for="mol in data" style="clear: both;">
+					<div class="mui-card-header">
+						<div class="header1" v-text="mol.market"></div>
+						<div class="header2"> 
+							<span v-text="mol.name"></span>&nbsp;
+							<span v-text="mol.price"></span>
+							<span>元/</span>
+							<span v-text="mol.unit"></span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="tabbar-with-map" class="mui-control-content">
+				<div class="title">当前版本：<span id="ver"></span></div>
+				<ul class="mui-table-view">
+					<li class="mui-table-view-cell">
+						<a class="mui-navigate-right">
+							选择数据源
+						</a>
+						<input class="file_cla" type='file' accept='text/plain' onchange='openFile(event)'>
+					</li>
+				</ul>
+				<div class="mui-card" style="margin: 5px 0 0 0;">
+					<div class="mui-card-header">新增商品</div>
+					<div class="mui-card-content">
+						<form class="mui-input-group">
+							<div class="mui-input-row">
+								<label>位置:<span>*</span></label>
+								<input id="market" type="text" placeholder="如：华润万家">
+							</div>
+							<div class="mui-input-row">
+								<label>商品:<span>*</span></label>
+								<input id="name" type="text" placeholder="如：青菜">
+							</div>
+							<div class="mui-input-row">
+								<label>价格:<span>*</span></label>
+								<input id="price" type="text" placeholder="如：10">
+							</div>
+							<div class="mui-input-row">
+								<label>单位:<span>*</span></label>
+								<input id="unit" type="text" placeholder="如：500g">
+							</div>
+						</form>
+					</div>
+					<div class="mui-card-footer">
+						<div class="mui-button-row">
+							<button type="button" class="mui-btn mui-btn-primary mui-btn-a" v-on:tap="submit()">添加</button>&nbsp;&nbsp;
+							<button type="button" class="mui-btn mui-btn-danger mui-btn-a" v-on:tap="cancel()">重置</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	
-</body>
+	
+		<script src="js/mui.min.js"></script>
+		<script src="js/jquery-1.7.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/vue.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/publicFun.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			mui.init({
+				swipeBack: true //启用右滑关闭功能
+			});
+			
+			var version = localStorage.getItem("SUPERMAEKET_FILE_VERSION");
+			document.getElementById("ver").innerHTML = version; //版本赋值
+			
+			var data = localStorage.getItem("SUPERMAEKET_FILE_DATA");
+			data = JSON.parse(data)
+			
+			if(!version) {
+				alert("请先选择数据源")
+				$(".mui-tab-item").toggleClass("mui-active");
+				$(".mui-control-content").toggleClass("mui-active");
+			}
+			
+			//监听首页点击事件
+			document.getElementById("main").addEventListener('tap', function() {
+				version = localStorage.getItem("SUPERMAEKET_FILE_VERSION");
+				document.getElementById("ver").innerHTML = version;
+				
+				data = localStorage.getItem("SUPERMAEKET_FILE_DATA");
+				app.data = JSON.parse(data).data;
+				
+				if(!version) {
+					mui.toast("请先选择数据源")
+				}
+			})
+			
+			var app = new Vue({
+				el: "#tabbar",
+				data: data,
+				methods: {
+					search: function() { //筛选
+						var val = document.getElementById("searVal").value;
+						var newArr = new Array;
+						var oldData = JSON.parse(localStorage.getItem("SUPERMAEKET_FILE_DATA")).data;
+						
+						if(val) {
+							for(var i=0; i<oldData.length; i++) {
+								if(oldData[i].name.indexOf(val) > -1) {
+									newArr.push(oldData[i])
+								}
+							}
+							if(newArr.length == 0) {
+								mui.toast("暂无数据")
+							}
+							this.data = newArr;
+						} else {
+							this.data = oldData;
+						}
+   					}
+				}
+			})
+			
+			var tApp = new Vue({
+				el: '#tabbar-with-map',
+				data: data,
+				methods: {
+					submit: function() { //添加
+						var market = document.getElementById("market").value;
+						var name = document.getElementById("name").value;
+						var price = document.getElementById("price").value;
+						var unit = document.getElementById("unit").value;
+						
+						//必填验证
+						if(!market) {
+							mui.toast("位置不能为空")
+							return
+						}
+						if(!name) {
+							mui.toast("商品不能为空")
+							return
+						}
+						if(!price) {
+							mui.toast("价格不能为空")
+							return
+						}
+						if(!unit) {
+							mui.toast("单位不能为空")
+							return
+						}
+						
+						//获取原值
+						var oldVersion = localStorage.getItem("SUPERMAEKET_FILE_VERSION");
+						var oldData = localStorage.getItem("SUPERMAEKET_FILE_DATA");
+						oldData = JSON.parse(oldData);
+						
+						//添加新值
+						var newObj = new Object;
+						newObj.market = market;
+						newObj.name = name;
+						newObj.price = price;
+						newObj.unit = unit;
+						
+						oldData.data.push(newObj)
+						
+						//版本
+						var newData = getVersion();
+						newData = newData + "\n" + JSON.stringify(oldData);
+						
+						//写入文件
+						writeFile(newData);
+						
+						//写入缓存
+						writeLocal(newData)
+
+						//清空输入框
+						this.cancel();
+					},
+					cancel: function() { //重置
+						document.getElementById("market").value = ""
+						document.getElementById("name").value = ""
+						document.getElementById("price").value = ""
+						document.getElementById("unit").value = ""
+						
+					}
+				}
+			})
+		</script>
+	</body>
 </html>
